@@ -1,83 +1,109 @@
-import home from "../public/home.jpg";
-import { useRef, useState } from "react";
-var svgNotFound = <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" class="ai ai-Cross"><path d="M20 20L4 4m16 0L4 20"/></svg>
-export default function Home() {
-  const searchTermRef = useRef();
-  const content = useRef();
-  var [getBooks, setBooks] = useState([]);
-  function addBook(obj) {
+import { useEffect, useRef, useState } from "react";
 
-  }
-  function loadBooks() {
-    var bookName = searchTermRef.current.value;
+import * as JsSearch from "js-search";
+import { useRouter } from "next/router";
+var svgNotFound = (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width="14"
+      height="14"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="3"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+      class="ai ai-Cross"
+    >
+      <path d="M20 20L4 4m16 0L4 20" />
+    </svg>
+  );
+export default function Home() {
+    const router = useRouter();
+  const searchTermRef = useRef();
+  var [getBooks, setBooks] = useState([]);
+  var [storage, setStorage] = useState([]);
+  var [backButton, setBackButton] = useState(null);
+  function showResults() {
+    setBackButton(null)
+    searchTermRef.current.value = "";
     fetch(
-      `https://www.googleapis.com/books/v1/volumes?q=${encodeURIComponent(
-        bookName
-      )}`
-    )
-      .then((response) => response.json())
-      .then((data) => {
-        var tempDataObj = []
-        var items = data.items;
-        items.forEach((item, i) => {
-          console.log(`INDEX: ${i} of ${items.length}`);
-          var vi = item.volumeInfo;
-          var thumb = vi.imageLinks.thumbnail || ""
-          var lp = item.saleInfo.listPrice || {
-            amount: "N/A",
-            currencyCode: "",
-          };
-          var desc = vi.description || ""
-          var obj = JSON.stringify({
-            title: vi.title,
-            authors: vi.authors,
-            retailPrice: lp.amount,
-            currencyCode: lp.currencyCode,
-            description: desc,
-            thumbnail: thumb,
-          });
-          tempDataObj.push(
-              <>
+        `https://bookdb.tallphin.repl.co/data.json`
+      )
+        .then((response) => response.json())
+        .then((data) => {
+          var tempDataObj = [];
+          var items = data.data.reverse();
+          setStorage(items);
+          items.forEach((item, i) => {
+            console.log(`INDEX: ${i} of ${items.length}`);
+            var thumb =
+              item.thumbnail == "" ? svgNotFound : <img src={item.thumbnail} />;
+            tempDataObj.push(
+                <div key={i}>
                 <div className="card">
-                  <img src={thumb} />
-                  <h2>{vi.title}</h2>
-                  <p align="left">Authors: {vi.authors}</p>
-                  <p align="left">
-                    Retail price: {lp.amount} {lp.currencyCode}
-                  </p>
-                  <p align="left">Description: {desc}</p>
-                  <button onclick="addBook(hi)">Add to list</button>
+                  {thumb}
+                  <h2>{item.title}</h2>
+                  <div className="infoGrid">
+                    <p>Authors: {item.authors}</p>
+                    <p>
+                      Retail price: {item.retailPrice} {item.currencyCode}
+                    </p>
+                  </div>
+                  <p align="left">{item.description}</p>
                 </div>
                 <br />
-              </>
-            )
-          /*content.current.innerHTML += `
-            <div
-              class="card"
-            >
-            <img src="${vi.imageLinks.thumbnail}" />
-              <h2>${vi.title}</h2>
-              <p align="left">Authors: ${vi.authors}</p>
-              <p align="left">Retail price: ${lp.amount} ${lp.currencyCode}</p>
-              <p align="left">Description: ${si.textSnippet}</p>
-              <button onclick="addBook(hi)">Add to list</button>
-            </div>
-            <br />`;*/
+              </div>
+            );
+          });
+          setBooks(tempDataObj);
         });
-        setBooks(tempDataObj);
-      });
   }
+  useEffect(() => {
+    showResults();
+    }, []);
+      function searchBooks() {
+        setBackButton(<button onClick={showResults}>Back</button>)
+        var tempDataObj = [];
+        var searchBar = searchTermRef.current.value;
+        var searchdb = new JsSearch.Search("id");
+        searchdb.addIndex("title");
+        searchdb.addIndex("description");
+        searchdb.addIndex("authors");
+        searchdb.addDocuments(storage);
+        var results = searchdb.search(searchBar);
+        results.forEach((item, i) => {
+            var thumb = item.thumbnail == "" ? svgNotFound : <img src={item.thumbnail} />;
+            tempDataObj.push(
+                <div key={i}>
+              <div className="card">
+                {thumb}
+                <h2>{item.title}</h2>
+                <div className="infoGrid">
+                  <p>Authors: {item.authors}</p>
+                  <p>
+                    Retail price: {item.retailPrice} {item.currencyCode}
+                  </p>
+                </div>
+                <p align="left">{item.description}</p>
+              </div>
+              <br />
+            </div>
+            )
+
+        })
+        setBooks(tempDataObj);
+      }
   return (
     <>
       <div className="cont">
-        <h1>Add book to list</h1>
-        <input type="text" placeholder="Enter book name" ref={searchTermRef} />
-        &nbsp;&nbsp;<button onClick={loadBooks}>Search</button>
+        <h1>Books in your library</h1><br /><button style={{margin: 'auto', marginTop: '-20px'}}onClick={()=>{router.push('/addbooks')}}>Add books to library</button><br/><br/><br/><br/>
+        
+      <input type="text" placeholder="Enter book name" ref={searchTermRef} />
+        <br />{backButton}&nbsp;&nbsp;<button onClick={searchBooks}>Search</button> 
         <br />
         <br />
-        <div style={{ padding: "0% 5%" }} /*ref={content}*/>
-          {getBooks}
-        </div>
+        <div style={{ padding: "0% 5%" }} /*ref={content}*/>{getBooks}</div><br/><br/>
       </div>
     </>
   );
