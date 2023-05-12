@@ -65,8 +65,8 @@ function MyApp({ Component, pageProps }) {
         <button onClick={() => setIsConnected(false)}>Dismiss</button>
       </Modal>
       <Head>
+        <meta name="theme-color" content="#ede9d5">
         <meta name="viewport" content="width=device-width, initial-scale=1" />
-          <meta name="theme-color" content="#ede9d5">
       </Head>
      {isOpen ? null : <Component {...pageProps} />}
     </div>
