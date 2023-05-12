@@ -168,7 +168,11 @@ button,
 button:disabled {
   cursor: default;
 }
-
+.infoGrid {
+  display: grid;
+  align-items:flex-start;
+  grid-template-columns: 1fr 1fr;
+}
 .card {
   border: 1px solid white;
   border-radius: 20px;
@@ -184,8 +188,6 @@ button:focus {
 }
 .cont {
   text-align: center;
-  padding-right: 10px;
-  margin-right: -10%;
 }
 .sidebar {
   margin: 0;
