@@ -35,7 +35,7 @@ export default function Home() {
           var tempDataObj = [];
           var items = data.data.reverse();
           setStorage(items);
-          tempDataObj.push(<h3>Found {items.length} results!</h3>)
+          tempDataObj.push(<h3>The library has {items.length} books!</h3>)
           items.forEach((item, i) => {
             console.log(`INDEX: ${i} of ${items.length}`);
             var thumb =
@@ -73,6 +73,7 @@ export default function Home() {
         searchdb.addIndex("authors");
         searchdb.addDocuments(storage);
         var results = searchdb.search(searchBar);
+        tempDataObj.push(<h3>Found {results.length} results!</h3>)
         results.forEach((item, i) => {
             var thumb = item.thumbnail == "" ? svgNotFound : <img src={item.thumbnail} />;
             tempDataObj.push(
