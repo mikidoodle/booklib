@@ -35,6 +35,7 @@ export default function Home() {
           var tempDataObj = [];
           var items = data.data.reverse();
           setStorage(items);
+          tempDataObj.push(<h3>Found {items.length} results!</h3>)
           items.forEach((item, i) => {
             console.log(`INDEX: ${i} of ${items.length}`);
             var thumb =
